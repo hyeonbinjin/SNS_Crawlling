@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingActivity">
+
+    <Switch
+        android:id="@+id/alarmSwitch"
+        android:layout_width="351dp"
+        android:layout_height="75dp"
+        android:layout_marginTop="172dp"
+        android:text="알림창 설정"
+        android:textSize="28sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/vibSwitch"
+        android:layout_width="359dp"
+        android:layout_height="74dp"
+        android:layout_marginTop="56dp"
+        android:text="긴급상황 진동 알림"
+        android:textSize="28sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.576"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/alarmSwitch" />
+</androidx.constraintlayout.widget.ConstraintLayout>
