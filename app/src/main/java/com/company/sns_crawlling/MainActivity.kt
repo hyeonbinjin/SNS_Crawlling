@@ -199,6 +199,11 @@ class MainActivity : AppCompatActivity() {
                 t = apiTime[i - 1] - 10
                 break
             }
+
+            if (i == apiTime.size - 1) {
+                t = 2000
+                break
+            }
         }
 
         if (t == 0) return "0000"
