@@ -7,8 +7,10 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -22,14 +24,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -46,6 +47,9 @@ class MainActivity : AppCompatActivity() {
     private var longitude = 0.0
     private var latitude = 0.0
 
+    private val IP_ADDRESS = "192.168.0.2"
+    private val TAG = "phptest"
+
    @RequiresApi(Build.VERSION_CODES.O)
    override fun onCreate(savedInstanceState: Bundle?) {
        super.onCreate(savedInstanceState)
@@ -56,6 +60,72 @@ class MainActivity : AppCompatActivity() {
        val revertBtn = findViewById<ImageButton>(R.id.revertBtn)
        revertBtn.setOnClickListener {
            show()
+
+           //Location 테이블에 저장
+           val userID : String =
+               Settings.Secure.getString(contentResolver,
+               Settings.Secure.ANDROID_ID)
+           val created_at: String = LocalDateTime.now().format(
+               DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+           )
+           val position = "POINT($longitude $latitude)"
+
+           object : ThreadTask<String?, String>() {
+               override fun onPreExecute() {}
+               override fun doInBackground(vararg arg: String?): String {
+                   val serverURL: String? = arg[0]
+                   val userToken: String? = arg[1]
+                   val created_at: String? = arg[2]
+                   val position: String? = arg[3]
+
+                   val postParameters = "userToken=$userToken&created_at=$created_at&position=$position"
+
+                   try {
+                       val url = URL(serverURL)
+                       val httpURLConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
+
+                       httpURLConnection.readTimeout = 5000
+                       httpURLConnection.connectTimeout = 5000
+                       httpURLConnection.requestMethod = "POST"
+                       httpURLConnection.connect()
+
+                       val outputStream: OutputStream = httpURLConnection.outputStream
+                       outputStream.write(postParameters.toByteArray(charset("UTF-8")))
+                       outputStream.flush()
+                       outputStream.close()
+
+                       val responseStatusCode: Int = httpURLConnection.responseCode
+
+                       val inputStream: InputStream
+                       inputStream = if (responseStatusCode == HttpURLConnection.HTTP_OK) {
+                           httpURLConnection.inputStream
+                       } else {
+                           httpURLConnection.errorStream
+                       }
+
+                       val inputStreamReader = InputStreamReader(inputStream, "UTF-8")
+                       val bufferedReader = BufferedReader(inputStreamReader)
+
+                       val sb = StringBuilder()
+                       var line: String?
+
+                       while (bufferedReader.readLine().also({ line = it }) != null) {
+                           sb.append(line)
+                       }
+
+                       bufferedReader.close();
+
+                       return sb.toString();
+
+                   } catch (e: Exception) {
+                       return "Error" + e.message
+                   }
+               }
+
+               override fun onPostExecute(result: String) {
+
+               }
+           }.execute("http://$IP_ADDRESS/insert.php", userID, created_at, position)
        }
 
        val mapBtn = findViewById<Button>(R.id.mapBtn)
