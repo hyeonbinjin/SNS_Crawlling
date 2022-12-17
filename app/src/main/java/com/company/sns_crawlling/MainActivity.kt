@@ -7,10 +7,8 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -22,6 +20,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
@@ -34,6 +33,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,12 +48,24 @@ class MainActivity : AppCompatActivity() {
     private var latitude = 0.0
 
     private val IP_ADDRESS = "192.168.0.2"
-    private val TAG = "phptest"
+
+    private val TAG = "MainActivity"
 
    @RequiresApi(Build.VERSION_CODES.O)
    override fun onCreate(savedInstanceState: Bundle?) {
        super.onCreate(savedInstanceState)
        setContentView(R.layout.activity_main)
+
+       var userToken : String? = null
+//       FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+//           if (task.isSuccessful) {
+//               // Get new FCM registration token
+//               userToken = task.result?:""
+//           }
+//       }
+       FirebaseMessaging.getInstance().token.addOnSuccessListener {
+           userToken = it
+       }
 
        show()
 
@@ -62,9 +74,7 @@ class MainActivity : AppCompatActivity() {
            show()
 
            //Location 테이블에 저장
-           val userID : String =
-               Settings.Secure.getString(contentResolver,
-               Settings.Secure.ANDROID_ID)
+
            val created_at: String = LocalDateTime.now().format(
                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
            )
@@ -74,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                override fun onPreExecute() {}
                override fun doInBackground(vararg arg: String?): String {
                    val serverURL: String? = arg[0]
-                   val userToken: String? = arg[1]
+                   val userToken = arg[1]
                    val created_at: String? = arg[2]
                    val position: String? = arg[3]
 
@@ -122,10 +132,8 @@ class MainActivity : AppCompatActivity() {
                    }
                }
 
-               override fun onPostExecute(result: String) {
-
-               }
-           }.execute("http://$IP_ADDRESS/insert.php", userID, created_at, position)
+               override fun onPostExecute(result: String) = Unit
+           }.execute("http://$IP_ADDRESS/insert.php", userToken, created_at, position)
        }
 
        val mapBtn = findViewById<Button>(R.id.mapBtn)
@@ -349,7 +357,7 @@ class MainActivity : AppCompatActivity() {
                     when (fcstValue) {
                         "1" -> image.setImageResource(R.drawable.sun)
                         "2" -> image.setImageResource(R.drawable.rainy)
-                        "3" -> image.setImageResource(R.drawable.many_cloud)
+                        "3" -> image.setImageResource(R.drawable.manycloud)
                         "4" -> image.setImageResource(R.drawable.cloudy)
                     }
                 }
