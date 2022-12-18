@@ -48,18 +48,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_ONE_SHOT)
 
         val channelId = getString(R.string.default_notification_channel_id)
-        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        //val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(messageBody["title"])
             .setContentText(messageBody["body"])
             .setAutoCancel(true)
-            .setSound(defaultSoundUri)
+            .setVibrate(longArrayOf(0, 1000))
+            //.setSound(defaultSoundUri)
             .setContentIntent(pendingIntent)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
 
         //안드로이드 오레오 알림채널이 필요하기 때문에 넣음.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
